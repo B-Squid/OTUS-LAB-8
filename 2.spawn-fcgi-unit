@@ -1,0 +1,29 @@
+touch /etc/default/spawn-fcgi-env
+
+FCGIHOST="127.0.0.1"
+FCGIPORT=9000
+FCGIUSER="www-data"
+FCGIGROUP="www-data"
+FCGIAPP="/usr/bin/php-cgi"
+FCGICHILDREN=5
+
+=====================================
+systemctl edit --force spawn-fcgi.service
+systemctl edit --full spawn-fcgi.service
+
+[Unit]
+Description=spawn-fcgi unit
+Documentation=man:spawn-fcgi
+
+[Service]
+Type=forking
+EnvironmentFile=-/etc/default/spawn-fcgi-env
+PassEnvironment=FCGIHOST FCGIPORT FCGIUSER FCGIGROUP FCGIAPP FCGICHILDREN
+ExecStartPre=/bin/rm -rf /var/run/spawn-fcgi.pid
+ExecStart=/usr/bin/spawn-fcgi -a $FCGIHOST -p $FCGIPORT -u $FCGIUSER -g $FCGIGROUP -P spawn-fcgi.pid -C $FCGICHILDREN -- $FCGIAPP 2> /dev/null
+ExecStop=/bin/kill -SIGQUIT ${MAINPID} 
+TimeoutStopSec=5
+#PIDFile=/var/run/spawn-fcgi.pid
+
+[Install]
+WantedBy=multi-user.target
