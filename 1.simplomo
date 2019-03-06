@@ -1,0 +1,42 @@
+vim /etc/default/otus_log_watcher #(it`s Debian, sorry)
+#otus simle log monitor
+SIMPLE_FILE="/var/log/simple_log"
+SIMPLE_KEY="otus"
+
+==================================
+simplomo.service
+[Unit]
+Description=Otus simple log monitor
+#RefuseManualStart=true
+#RefuseManualStop=true
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/default/otus_log_watcher
+#(it`s Debian, sorry)
+PassEnvironment=SIMPLE_FILE SIMPLE_KEY
+ExecStart=/bin/bash -c "if grep -Fxq \"${SIMPLE_KEY}\" ${SIMPLE_FILE} ; then echo \"key found\" >> ${SIMPLE_FILE} ; fi ;"
+ExecStop=
+
+[Install]
+Alias=otus
+WantedBy=multi-user.target
+
+=============================
+simplomo.timer
+[Unit]
+Description=Run every 30 sec and on boot(monotone)
+
+[Timer]
+OnBootSec=10sec
+OnUnitActiveSec=10sec 
+
+[Install]
+WantedBy=timers.target
+
+=============================
+touch /var/log/simple_log
+Содержимое:
+otus
+key found
+key found
